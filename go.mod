@@ -1,4 +1,4 @@
-module github.com/weedge/raft-pebble
+module github.com/windmeup/raft-pebble
 
 go 1.19
 

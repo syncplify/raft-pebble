@@ -141,7 +141,7 @@ func New(options ...Option) (*PebbleKVStore, error) {
 	cache.Unref()
 	kv.db = pdb
 	kv.setEventListener(event)
-	//kv.defaultWriteOpts = &pebble.WriteOptions{Sync: true}
+	// kv.defaultWriteOpts = &pebble.WriteOptions{Sync: true}
 	kv.defaultWriteOpts = &pebble.WriteOptions{Sync: false}
 	return kv, nil
 }
@@ -231,7 +231,7 @@ func (s *PebbleKVStore) GetLog(index uint64, log *raft.Log) (err error) {
 
 // StoreLog stores a single raft log.
 func (s *PebbleKVStore) StoreLog(log *raft.Log) (err error) {
-	//return s.StoreLogs([]*raft.Log{log})
+	// return s.StoreLogs([]*raft.Log{log})
 	return s.storeLog(log)
 }
 
@@ -243,7 +243,7 @@ func (s *PebbleKVStore) storeLog(log *raft.Log) (err error) {
 		return err
 	}
 
-	//return s.db.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: true})
+	// return s.db.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: true})
 	return s.db.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: false})
 }
 
@@ -261,25 +261,25 @@ func (s *PebbleKVStore) StoreLogs(logs []*raft.Log) (err error) {
 			return err
 		}
 
-		//err = wb.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: true})
+		// err = wb.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: true})
 		err = wb.Set(key, val.Bytes(), &pebble.WriteOptions{Sync: false})
 		if err != nil {
 			return err
 		}
 	}
 
-	//return s.db.Apply(wb, &pebble.WriteOptions{Sync: true})
+	// return s.db.Apply(wb, &pebble.WriteOptions{Sync: true})
 	return s.db.Apply(wb, &pebble.WriteOptions{Sync: false})
 }
 
 // DeleteRange deletes logs within a given range inclusively.
 func (s *PebbleKVStore) DeleteRange(min, max uint64) (err error) {
-	//wo := &pebble.WriteOptions{Sync: true}
+	// wo := &pebble.WriteOptions{Sync: true}
 	wo := &pebble.WriteOptions{Sync: false}
 	fk := append(prefixLog, uint64ToBytes(min)...)
 	lk := append(prefixLog, uint64ToBytes(max+1)...)
 
-	//return s.deleteRange(fk, lk, wo)
+	// return s.deleteRange(fk, lk, wo)
 	return s.db.DeleteRange(fk, lk, wo)
 }
 
@@ -304,7 +304,7 @@ func (s *PebbleKVStore) deleteRange(fk, lk []byte, wo *pebble.WriteOptions) (err
 func (s *PebbleKVStore) Set(key []byte, val []byte) (err error) {
 	confKey := append(prefixConf, key...)
 
-	//return s.db.Set(confKey, val, &pebble.WriteOptions{Sync: true})
+	// return s.db.Set(confKey, val, &pebble.WriteOptions{Sync: true})
 	return s.db.Set(confKey, val, &pebble.WriteOptions{Sync: false})
 }
 
@@ -312,18 +312,15 @@ func (s *PebbleKVStore) Set(key []byte, val []byte) (err error) {
 // notice: if key/val not found return ErrKeyNotFound
 func (s *PebbleKVStore) Get(key []byte) (value []byte, err error) {
 	confKey := append(prefixConf, key...)
-	value, closer, err := s.db.Get(confKey)
-	if value == nil {
-		err = ErrKeyNotFound
+	v, closer, err := s.db.Get(confKey)
+	if err != nil {
 		return
 	}
-
-	defer func() {
-		if closer != nil {
-			err = FirstError(err, closer.Close())
-		}
-	}()
-
+	value = make([]byte, len(v))
+	copy(value, v)
+	if err = closer.Close(); err != nil {
+		return
+	}
 	return
 }
 
