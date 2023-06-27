@@ -314,6 +314,9 @@ func (s *PebbleKVStore) Get(key []byte) (value []byte, err error) {
 	confKey := append(prefixConf, key...)
 	v, closer, err := s.db.Get(confKey)
 	if err != nil {
+		if errors.Is(err, pebble.ErrNotFound) {
+			err = ErrKeyNotFound
+		}
 		return
 	}
 	value = make([]byte, len(v))
