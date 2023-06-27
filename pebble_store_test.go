@@ -421,7 +421,7 @@ func TestPebbleKVStore_Set_Get(t *testing.T) {
 	}()
 
 	// Returns error on non-existent key
-	if _, err := store.Get([]byte("bad")); err != pebble.ErrNotFound {
+	if _, err := store.Get([]byte("bad")); err != ErrKeyNotFound {
 		t.Fatalf("expected not found error, got: %q", err)
 	}
 
@@ -451,7 +451,7 @@ func TestPebbleKVStore_SetUint64_GetUint64(t *testing.T) {
 	}()
 
 	// Returns error on non-existent key
-	if _, err := store.GetUint64([]byte("bad")); err != pebble.ErrNotFound {
+	if _, err := store.GetUint64([]byte("bad")); err != ErrKeyNotFound {
 		t.Fatalf("expected not found error, got: %q", err)
 	}
 
