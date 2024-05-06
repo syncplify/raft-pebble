@@ -104,7 +104,7 @@ func New(options ...Option) (*PebbleKVStore, error) {
 	opts := &pebble.Options{
 		Levels:                      lopts,
 		MaxManifestFileSize:         maxLogFileSize,
-		MemTableSize:                int(config.KVWriteBufferSize),
+		MemTableSize:                uint64(int(config.KVWriteBufferSize)),
 		MemTableStopWritesThreshold: int(config.KVMaxWriteBufferNumber),
 		LBaseMaxBytes:               int64(config.KVMaxBytesForLevelBase),
 		L0CompactionFileThreshold:   int(config.KVLevel0FileNumCompactionTrigger),
@@ -171,11 +171,14 @@ func (s *PebbleKVStore) Close() error {
 // so use lowerBound,UpperBound for iter prefixLog
 // notice: if not found return 0, nil
 func (s *PebbleKVStore) FirstIndex() (first uint64, err error) {
-	iter := s.db.NewIter(&pebble.IterOptions{
+	iter, err := s.db.NewIter(&pebble.IterOptions{
 		LowerBound: prefixLog,
 		UpperBound: prefixConf,
 		KeyTypes:   pebble.IterKeyTypePointsAndRanges,
 	})
+	if err != nil {
+		return
+	}
 
 	defer func() {
 		err = FirstError(err, iter.Close())
@@ -194,11 +197,14 @@ func (s *PebbleKVStore) FirstIndex() (first uint64, err error) {
 // so use lowerBound,UpperBound for iter prefixLog
 // notice: if not found return 0, nil
 func (s *PebbleKVStore) LastIndex() (last uint64, err error) {
-	iter := s.db.NewIter(&pebble.IterOptions{
+	iter, err := s.db.NewIter(&pebble.IterOptions{
 		LowerBound: prefixLog,
 		UpperBound: prefixConf,
 		KeyTypes:   pebble.IterKeyTypePointsAndRanges,
 	})
+	if err != nil {
+		return
+	}
 
 	defer func() {
 		err = FirstError(err, iter.Close())
