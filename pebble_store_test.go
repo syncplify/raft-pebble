@@ -30,11 +30,14 @@ func testPebbleKVStore(t testing.TB) (kvStore *PebbleKVStore, walDir, dir string
 	}
 	os.RemoveAll(walDir)
 
+	kvCfg := GetDefaultRaftLogRocksDBConfig()
+	kvCfg.KVLRUCacheSize = 256 * 1024 * 1024
+
 	if os.Getenv("mock") == "" {
 		kvStore, err = New(WithDbDirPath(dir))
 	} else {
 		kvStore, err = New(
-			WithConfig(GetDefaultRaftLogRocksDBConfig()),
+			WithConfig(kvCfg),
 			WithLogger(pebble.DefaultLogger),
 			WithFS(vfs.Default),
 			WithWalDirPath(walDir),
